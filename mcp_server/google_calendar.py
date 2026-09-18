@@ -72,3 +72,52 @@ def check_availability(date_str: str, duration_minutes: int = 30) -> list[str]:
             free_slots.append(slot)
 
     return free_slots
+
+def create_event(date_str: str,
+    start_time: str,
+    duration_minutes: int,
+    title: str,
+    description: str = "",
+    attendee_emails: list[str] | None = None,
+) -> dict:
+    """
+    Create an event on the primary calendar.
+
+    Args:
+        date_str: Date in YYYY-MM-DD format.
+        start_time: Start time in HH:MM 24h format.
+        duration_minutes: Length of the event in minutes.
+        title: Event title/summary.
+        description: Optional event description.
+        attendee_emails: Optional list of attendee email addresses.
+
+    Returns:
+        A dict with the created event's id and a link to view it.
+    """
+
+    tz = get_user_timezone()
+    service = get_calendar_service()
+
+    hour, minute = map(int, start_time.split(":"))
+    start_dt = datetime.strptime(date_str, "%Y-%m-%d").replace(
+        hour=hour, minute=minute, tzinfo=tz
+    )
+    end_dt = start_dt + timedelta(minutes=duration_minutes)
+
+    event_body = {
+        "summary":title,
+        "description":description,
+        "start": {"dateTime": start_dt.isoformat(), "timeZone": str(tz)},
+        "end": {"dateTime": end_dt.isoformat(), "timeZone": str(tz)},
+    }
+
+    if attendee_emails:
+        event_body["attendees"] = [{"email": email} for email in attendee_emails]
+
+    created = service.events().insert(
+        calendarId = "primary",
+        body = event_body,
+        sendUpdates = "all" if attendee_emails else None
+    ).execute()
+
+    return {"event_id": created["id"], "link": created.get("htmlLink", "")}
