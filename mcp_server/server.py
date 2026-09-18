@@ -6,6 +6,7 @@ from google_calendar import (
     check_availability as _check_availability,
     create_event as _create_event,
 )
+from tasks import add_task as _add_task, list_tasks as _list_tasks
 
 mcp = MCPServer("PersonalOpsServer")
 
@@ -50,6 +51,36 @@ def create_event(
         A dict with the created event's id and a link to view it.
     """
     return _create_event(date, start_time, duration_minutes, title, description, attendee_emails)
+
+
+@mcp.tool()
+def add_task(title: str, due_date: str | None = None, priority: str = "medium") -> dict:
+    """
+    Add a new task to the task tracker.
+
+    Args:
+        title: What the task is.
+        due_date: Optional due date in YYYY-MM-DD format.
+        priority: One of "low", "medium", "high".
+
+    Returns:
+        The created task, including its id.
+    """
+    return _add_task(title, due_date, priority)
+
+
+@mcp.tool()
+def list_tasks(include_done: bool = False) -> list[dict]:
+    """
+    List current tasks.
+
+    Args:
+        include_done: If true, include already-completed tasks.
+
+    Returns:
+        A list of tasks.
+    """
+    return _list_tasks(include_done)
 
 
 if __name__ == "__main__":
