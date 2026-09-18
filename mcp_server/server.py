@@ -7,6 +7,7 @@ from google_calendar import (
     create_event as _create_event,
 )
 from tasks import add_task as _add_task, list_tasks as _list_tasks
+from gmail import send_email as _send_email
 
 mcp = MCPServer("PersonalOpsServer")
 
@@ -81,6 +82,22 @@ def list_tasks(include_done: bool = False) -> list[dict]:
         A list of tasks.
     """
     return _list_tasks(include_done)
+
+
+@mcp.tool()
+def send_email(to: str, subject: str, body: str) -> dict:
+    """
+    Send an email from the user's Gmail account.
+
+    Args:
+        to: Recipient email address.
+        subject: Email subject line.
+        body: Plain-text email body.
+
+    Returns:
+        A dict with the sent message's id.
+    """
+    return _send_email(to, subject, body)
 
 
 if __name__ == "__main__":
