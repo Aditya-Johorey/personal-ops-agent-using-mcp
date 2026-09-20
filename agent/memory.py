@@ -1,4 +1,9 @@
 import os
+os.environ["MEM0_TELEMETRY"] = "False"
+
+import warnings
+warnings.filterwarnings("ignore", category=UserWarning)
+
 from mem0 import Memory
 
 USER_ID = "primary_user"  # single-user project, so this is just a fixed identifier

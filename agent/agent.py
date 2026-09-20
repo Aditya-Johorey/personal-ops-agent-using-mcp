@@ -7,6 +7,8 @@ from langchain.agents import create_agent
 from langchain.mcp import MCPAdapter
 from langchain_ollama import ChatOllama
 
+from memory import add_memory, search_memory
+
 MCP_SERVER_URL = "http://127.0.0.1:8000/mcp"
 
 SYSTEM_PROMPT = """You are a personal operations assistant. You help the user manage \
@@ -21,6 +23,8 @@ Guidelines:
 - Be concise and direct.
 - If a request is ambiguous (e.g. missing a date or recipient), ask a clarifying question \
   instead of guessing.
+- You may be given "Relevant memories" from past conversations — use them if helpful, \
+  but do not mention the word "memory" explicitly unless the user asks what you remember.
 """
 
 
@@ -42,13 +46,21 @@ async def main():
             if user_input.strip().lower() in ("quit", "exit"):
                 break
 
-            messages.append({"role": "user", "content": user_input})
+            # Pull relevant past facts and inject them as context for this turn only.
+            relevant = search_memory(user_input)
+            if relevant:
+                memory_context = "Relevant memories: " + "; ".join(relevant)
+                messages.append({"role": "user", "content": f"{user_input}\n\n[{memory_context}]"})
+            else:
+                messages.append({"role": "user", "content": user_input})
+
             result = await agent.ainvoke({"messages": messages})
 
             reply = result["messages"][-1]
             print("Agent:", reply.content)
 
             messages = result["messages"]
+            add_memory(user_message=user_input, assistant_message=reply.content)
 
 
 if __name__ == "__main__":
