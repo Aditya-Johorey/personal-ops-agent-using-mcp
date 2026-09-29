@@ -96,7 +96,7 @@ The following are required to run the project but are **not committed** (see
 
 ### 2. Clone and set up the environment
 ```powershell
-git clone https://github.com/Aditya-Johorey/personal-ops-agent-using-mcp
+git clone https://github.com/Aditya-Johorey/personal-ops-agent-using-mcp.git
 cd OpsAgentMCP
 python -m venv venv
 venv\Scripts\activate
